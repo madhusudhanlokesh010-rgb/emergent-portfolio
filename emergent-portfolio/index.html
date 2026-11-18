@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Madhusudhan — Creative Technologist &amp; Producer</title>
+<meta name="description" content="Portfolio of Madhusudhan — Creative Technologist, Producer and Filmmaker. AI Filmmaker assignment submission for Emergent.">
+<meta name="theme-color" content="#070708">
+<meta property="og:title" content="Madhusudhan — Creative Technologist & Producer">
+<meta property="og:description" content="Filmmaking, visual design and generative AI — cinema-grade stories.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: { obsidian:'#070708', alabaster:'#F4F3EF', mute:'#8A8984', vermilion:'#FF4F1F' },
+      fontFamily: {
+        sans:['"Plus Jakarta Sans"','Inter','system-ui','sans-serif'],
+        mono:['"JetBrains Mono"','ui-monospace','SFMono-Regular','monospace']
+      }
+    } }
+  }
+</script>
+
+<style>
+  :root{ --bg:#070708; --fg:#F4F3EF; --mute:#8A8984; --acc:#FF4F1F; --ease:cubic-bezier(.2,.7,.1,1); }
+  html{ background:var(--bg); }
+  body{ background:var(--bg); color:var(--fg); overflow-x:hidden; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  ::selection{ background:var(--acc); color:#070708; }
+  :focus-visible{ outline:1px solid var(--acc); outline-offset:4px; }
+  ::-webkit-scrollbar{ width:8px } ::-webkit-scrollbar-track{ background:var(--bg) } ::-webkit-scrollbar-thumb{ background:#1d1d20 }
+  .bal{ text-wrap:balance }
+
+  /* ---------- cursor (fine pointers only) ---------- */
+  .has-cursor, .has-cursor a, .has-cursor button{ cursor:none }
+  #dot,#ring{ position:fixed; left:0; top:0; pointer-events:none; z-index:9999; opacity:0; transition:opacity .3s }
+  .has-cursor #dot,.has-cursor #ring{ opacity:1 }
+  #dot{ width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:var(--acc) }
+  #ring{ width:0; height:0 }
+  .ring-i{ position:absolute; left:-17px; top:-17px; width:34px; height:34px; border-radius:50%;
+    border:1px solid rgba(244,243,239,.32); display:grid; place-items:center;
+    transition:width .45s var(--ease),height .45s var(--ease),left .45s var(--ease),top .45s var(--ease),background .3s,border-color .3s }
+  .ring-t{ font:500 10px 'JetBrains Mono',monospace; letter-spacing:.14em; text-transform:uppercase; color:#070708; opacity:0; transition:opacity .25s }
+  #ring.big .ring-i{ width:86px; height:86px; left:-43px; top:-43px; background:var(--acc); border-color:transparent }
+  #ring.big .ring-t{ opacity:1 }
+  #ring.link .ring-i{ width:56px; height:56px; left:-28px; top:-28px; border-color:var(--acc) }
+
+  /* ---------- film grain ---------- */
+  .grain{ position:fixed; inset:-10%; width:120%; height:120%; pointer-events:none; z-index:60; opacity:.055;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    animation:grain 1s steps(6) infinite }
+  @keyframes grain{ 0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)} 40%{transform:translate(2%,-4%)} 60%{transform:translate(-4%,-1%)} 80%{transform:translate(3%,3%)} 100%{transform:translate(0,0)} }
+
+  /* ---------- intro ---------- */
+  #spot{ background:radial-gradient(520px circle at var(--sx,50%) var(--sy,50%), rgba(244,243,239,.055), transparent 70%) }
+
+  #name{ display:flex; flex-wrap:wrap; justify-content:center; column-gap:.26em; row-gap:0 }
+  .word{ display:inline-flex; white-space:nowrap }
+  .ch{ display:inline-block; opacity:0 }
+  .loaded .ch{ animation:rise 1.3s var(--ease) both; animation-delay:calc(var(--i) * 48ms + 150ms) }
+  .ch-i{ display:inline-block; will-change:transform }
+  @keyframes rise{ from{ opacity:0; transform:translateY(.45em); filter:blur(12px) } to{ opacity:1; transform:none; filter:blur(0) } }
+
+  #prompt .vline{ position:relative; width:1px; height:46px; background:rgba(244,243,239,.14); overflow:hidden }
+  #prompt .vline::after{ content:""; position:absolute; left:0; top:-50%; width:1px; height:50%; background:var(--acc); animation:drip 2.2s var(--ease) infinite }
+  @keyframes drip{ 0%{ top:-50% } 70%,100%{ top:100% } }
+  #prompt, #hud{ opacity:0; transition:opacity 1.2s ease .9s }
+  .loaded #prompt, .loaded #hud{ opacity:1 }
+
+  /* ---------- fixed chrome (after intro) ---------- */
+  #bar{ transform:translateY(-100%); opacity:0; transition:transform .8s var(--ease), opacity .8s; }
+  .past #bar{ transform:none; opacity:1 }
+  #rail{ opacity:0; pointer-events:none; transition:opacity .8s }
+  .past #rail{ opacity:1; pointer-events:auto }
+  #rail a{ position:relative; color:var(--mute); transition:color .3s }
+  #rail a::before{ content:""; position:absolute; right:calc(100% + 10px); top:50%; width:0; height:1px; background:var(--acc); transition:width .45s var(--ease) }
+  #rail a.on{ color:var(--fg) } #rail a.on::before{ width:20px }
+
+  /* ---------- reveal ---------- */
+  .reveal{ opacity:0; transform:translate3d(0,26px,0); transition:opacity 1s var(--ease), transform 1s var(--ease); transition-delay:var(--d,0s) }
+  .reveal.in{ opacity:1; transform:none }
+  .clipr{ clip-path:inset(0 0 100% 0); transition:clip-path 1.5s var(--ease); transition-delay:var(--d,0s) }
+  .clipr.in{ clip-path:inset(-6% -6% -6% -6%) }
+  .hair{ transform:scaleX(0); transform-origin:left; transition:transform 1.8s var(--ease) }
+  .hair.in{ transform:none }
+
+  /* ---------- video frames ---------- */
+  .vframe{ perspective:1600px }
+  .tilt-in{ position:relative; overflow:hidden; background:#0b0b0d; box-shadow:0 0 0 1px rgba(244,243,239,.06), 0 40px 120px -40px rgba(0,0,0,.9); will-change:transform; transform-style:preserve-3d }
+  .ph{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; padding:24px;
+    font:400 11px 'JetBrains Mono',monospace; letter-spacing:.08em; color:var(--mute); overflow:hidden; word-break:break-all;
+    background:repeating-linear-gradient(135deg,rgba(244,243,239,.025) 0 1px,transparent 1px 14px), radial-gradient(120% 90% at 30% 20%,#17171a,#0b0b0d);
+    transition:opacity .9s }
+  .ph::after{ content:""; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,79,31,.08) 50%,transparent 70%); transform:translateX(-100%); animation:sweep 3.4s ease-in-out infinite }
+  .ph .ph-l{ color:var(--fg) } .ph .ph-f{ color:var(--acc) }
+  .ready .ph{ opacity:0; pointer-events:none }
+  @keyframes sweep{ to{ transform:translateX(100%) } }
+
+  .vf{ position:absolute; inset:0; pointer-events:none; font:500 10.5px 'JetBrains Mono',monospace; letter-spacing:.14em; text-transform:uppercase; color:rgba(244,243,239,.82); text-shadow:0 1px 8px rgba(0,0,0,.5) }
+  .vf .rec{ position:absolute; top:14px; left:14px; display:flex; align-items:center; gap:7px }
+  .vf .rec b{ width:6px; height:6px; border-radius:50%; background:var(--acc); opacity:.35 }
+  .live .vf .rec b{ opacity:1; animation:blink 1.4s steps(2,jump-none) infinite }
+  @keyframes blink{ 50%{ opacity:.15 } }
+  .vf .vtc{ position:absolute; top:14px; right:14px }
+  .vf .cam{ position:absolute; bottom:18px; left:14px; opacity:.7 }
+  .snd{ position:absolute; right:12px; bottom:10px; z-index:3; display:flex; align-items:center; gap:9px; padding:7px 10px;
+    font:500 10.5px 'JetBrains Mono',monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--fg);
+    background:rgba(7,7,8,.45); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid rgba(244,243,239,.14); transition:border-color .3s, background .3s }
+  .snd:hover{ border-color:var(--acc) }
+  .sound .snd{ background:rgba(255,79,31,.18); border-color:var(--acc) }
+  .eq{ display:flex; align-items:flex-end; gap:2px; height:10px }
+  .eq i{ display:block; width:2px; height:3px; background:currentColor; transition:height .3s }
+  .sound .eq i{ animation:eq .9s ease-in-out infinite }
+  .sound .eq i:nth-child(2){ animation-delay:-.3s } .sound .eq i:nth-child(3){ animation-delay:-.6s }
+  @keyframes eq{ 0%,100%{ height:3px } 50%{ height:10px } }
+
+  .tool{ transition:color .25s } .tool:hover{ color:var(--acc) }
+
+  @media (prefers-reduced-motion:reduce){
+    .grain{ animation:none }
+    .reveal,.clipr,.hair{ transition:none; opacity:1; transform:none; clip-path:none }
+    .ph::after,.eq i,#prompt .vline::after{ animation:none }
+  }
+</style>
+</head>
+
+<body class="bg-obsidian text-alabaster font-sans antialiased">
+<div class="grain" aria-hidden="true"></div>
+<div id="ring" aria-hidden="true"><div class="ring-i"><span class="ring-t"></span></div></div>
+<div id="dot" aria-hidden="true"></div>
+
+<!-- Persistent chrome — appears only after the intro ends -->
+<header id="bar" class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-6 md:px-12 h-14 bg-obsidian/60 backdrop-blur-md border-b border-white/[.05]">
+  <a href="#intro-top" id="home" class="text-[13px] font-semibold tracking-[-0.01em]">Madhusudhan</a>
+  <span class="font-mono text-[11px] text-mute tracking-[.12em] hidden sm:block">AI Filmmaker</span>
+</header>
+<nav id="rail" aria-label="Sections" class="fixed right-7 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-5 font-mono text-[11px] tracking-[.12em]">
+  <a href="#a1" data-rail="a1">01</a>
+  <a href="#a2" data-rail="a2">02</a>
+  <a href="#a3" data-rail="a3">03</a>
+  <a href="#a4" data-rail="a4">04</a>
+  <a href="#a5" data-rail="a5">05</a>
+</nav>
+
+<!-- =====================  PART A — PINNED SCROLLYTELLING INTRO  ===================== -->
+<section id="intro" aria-label="Introduction" class="relative" style="height:360vh">
+  <span id="intro-top" class="absolute top-0"></span>
+  <div id="stage" class="sticky top-0 h-screen w-full overflow-hidden">
+    <div id="spot" class="absolute inset-0 pointer-events-none" aria-hidden="true"></div>
+
+    <!-- Stage 1–3: name + title -->
+    <div class="absolute inset-0 flex items-center justify-center px-5">
+      <div id="nameWrap" class="relative w-full text-center will-change-transform">
+        <h1 id="name" data-text="Madhusudhan"
+            class="text-[clamp(3rem,12vw,12rem)] font-semibold leading-[.98] tracking-[-0.045em]">Madhusudhan</h1>
+        <p id="heroTitle" class="absolute inset-x-0 top-full mt-6 md:mt-9 text-[clamp(.95rem,1.7vw,1.5rem)] font-normal tracking-[-0.01em] text-mute opacity-0 will-change-transform">
+          Creative Technologist &amp; Producer <span class="text-vermilion mx-1.5 md:mx-3">|</span> Filmmaker
+        </p>
+      </div>
+    </div>
+
+    <!-- Stage 3–4: experience statement -->
+    <div id="exp" class="absolute inset-0 flex items-center justify-center px-6 md:px-14 pointer-events-none opacity-0 will-change-transform">
+      <p id="expText" class="flex flex-col items-center text-center text-[clamp(0.75rem,2.6vw,3.1rem)] font-medium leading-[1.25] tracking-[-0.028em]">
+        <span class="block w-full max-w-[1080px] whitespace-nowrap">Over 5 years of experience in filmmaking, visual design,</span>
+        <span class="block w-full max-w-[920px] whitespace-nowrap">and generative AI, turning creative concepts into</span>
+        <span class="block w-full max-w-[700px] whitespace-nowrap">high-impact commercial stories and</span>
+        <span class="block w-full max-w-[400px] whitespace-nowrap">visual experiences.</span>
+      </p>
+    </div>
+
+    <!-- Scroll prompt (bottom-left) -->
+    <div id="prompt" class="absolute left-8 md:left-12 bottom-8 md:bottom-12 flex items-end gap-4">
+      <span class="vline" aria-hidden="true"></span>
+      <span class="font-mono text-[11px] tracking-[.12em] text-mute pb-px">Scroll down to view</span>
+    </div>
+
+    <!-- Timecode: scroll is the playhead -->
+    <div id="hud" class="absolute right-8 md:right-12 bottom-8 md:bottom-12 font-mono text-[11px] tracking-[.12em] text-mute" aria-hidden="true">
+      TC <span id="tc" class="text-alabaster">00:00:00:00</span>
+    </div>
+   <div id="progress" style="display: none;"></div>
+  </div>
+</section>
+
+<!-- =====================  PART B — PERSISTENT ONE-PAGER  ===================== -->
+<main id="work" class="relative bg-obsidian">
+  <div class="max-w-[1440px] mx-auto px-6 md:px-12">
+
+    <!-- ===== 01 ===== -->
+    <section id="a1" data-sec class="pt-16 md:pt-28 pb-24 md:pb-40">
+      <div class="flex items-center gap-5 md:gap-8 reveal">
+        <span class="font-mono text-[12px] tracking-[.2em] text-vermilion">01</span>
+        <span class="hair flex-1 h-px bg-white/10"></span>
+        <span class="font-mono text-[11px] tracking-[.12em] text-mute hidden sm:block">9:16 · UGC · Product &amp; Character</span>
+      </div>
+
+      <div class="mt-10 md:mt-16 grid md:grid-cols-12 gap-10 lg:gap-16 items-center">
+        <div class="md:col-span-5 lg:col-span-4 reveal">
+          <div class="vframe max-w-[360px]" data-cursor="Sound" data-cam="Cam A · 9:16" data-file="assets/01-mini-washing-machine.mp4">
+            <div class="tilt-in aspect-[9/16] w-full" style="aspect-ratio: 9/16;">
+              <video class="absolute inset-0 w-full h-full object-cover" src="assets/01-mini-washing-machine.mp4" autoplay muted loop playsinline preload="metadata" aria-label="UGC concept for a mini washing machine"></video>
+            </div>
+          </div>
+        </div>
+        
+        <div class="md:col-span-7 lg:col-span-8">
+          <h2 class="reveal text-[clamp(2.1rem,4.6vw,4.25rem)] font-semibold leading-[1.04] tracking-[-0.04em] bal">UGC Concept <span class="text-mute font-normal">— Mini Washing Machine</span></h2>
+          <p class="reveal mt-6 md:mt-8 text-[clamp(1.05rem,1.5vw,1.3rem)] leading-[1.55] text-alabaster/90 max-w-[46ch]" style="--d:.08s">
+            A UGC-style product ad for a mini washing machine built for social feeds combining natural creator delivery with locked character and product consistency across every cut.
+          </p>
+          <dl class="reveal mt-8 font-mono text-[12px] leading-relaxed border-y border-white/[.08] divide-y divide-white/[.08]" style="--d:.14s">
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Tools</dt>
+              <dd><span class="tool">Veo 3</span>, <span class="tool">Flow</span>, <span class="tool">ElevenLabs</span>, <span class="tool">Premiere Pro</span> &amp; <span class="tool">Photoshop</span></dd></div>
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Turnaround</dt><dd>90 Mins</dd></div>
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Study</dt><dd>Relevance, character &amp; product consistency</dd></div>
+          </dl>
+          <a href="https://drive.google.com/file/d/1XEKUG4zO3umPmb06WrElHQ0BP8sQytD7/view?usp=sharing" target="_blank" rel="noopener" class="reveal inline-block mt-6 font-mono text-[11px] uppercase tracking-widest text-mute hover:text-vermilion transition-colors" style="--d:.2s">↗ View High-Res (Drive)</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 02 ===== -->
+    <section id="a2" data-sec class="pb-24 md:pb-40">
+      <div class="flex items-center gap-5 md:gap-8 reveal">
+        <span class="font-mono text-[12px] tracking-[.2em] text-vermilion">02</span>
+        <span class="hair flex-1 h-px bg-white/10"></span>
+        <span class="font-mono text-[11px] tracking-[.12em] text-mute hidden sm:block">9:16 · Performance Creative</span>
+      </div>
+
+      <div class="mt-10 md:mt-16 grid md:grid-cols-12 gap-10 lg:gap-16 items-center">
+        <div class="md:col-span-5 lg:col-span-4 reveal">
+          <div class="vframe max-w-[360px]" data-cursor="Sound" data-cam="Cam B · 9:16" data-file="assets/02-spec-narrative.mp4">
+            <div class="tilt-in aspect-[9/16] w-full" style="aspect-ratio: 9/16;">
+              <video class="absolute inset-0 w-full h-full object-cover" src="assets/02-spec-narrative.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Creative exploration — performance ad concept"></video>
+            </div>
+          </div>
+        </div>
+        <div class="md:col-span-7 lg:col-span-8">
+          <h2 class="reveal text-[clamp(2.1rem,4.6vw,4.25rem)] font-semibold leading-[1.04] tracking-[-0.04em] bal">Creative Exploration <span class="text-mute font-normal">— Performance Ad Concept</span></h2>
+          <p class="reveal mt-6 md:mt-8 text-[clamp(1.05rem,1.5vw,1.3rem)] leading-[1.55] text-alabaster/90 max-w-[46ch]" style="--d:.08s">
+            An independent creative exploration designed for performance marketing, engineered around an immediate scroll-stopping visual hook, dynamic camera control, and tight commercial pacing.
+          </p>
+          <dl class="reveal mt-8 font-mono text-[12px] leading-relaxed border-y border-white/[.08] divide-y divide-white/[.08]" style="--d:.14s">
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Focus</dt><dd>Scroll-stopping hook, camera control &amp; pacing</dd></div>
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Turnaround</dt><dd>90 Mins</dd></div>
+          </dl>
+          <a href="https://drive.google.com/file/d/1h37A92lkqCcagb3lg5nO3CKG-PXYpHkY/view?usp=drive_link" target="_blank" rel="noopener" class="reveal inline-block mt-6 font-mono text-[11px] uppercase tracking-widest text-mute hover:text-vermilion transition-colors" style="--d:.2s">↗ View High-Res (Drive)</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 03 ===== -->
+    <section id="a3" data-sec class="pb-24 md:pb-40">
+      <div class="flex items-center gap-5 md:gap-8 reveal">
+        <span class="font-mono text-[12px] tracking-[.2em] text-vermilion">03</span>
+        <span class="hair flex-1 h-px bg-white/10"></span>
+        <span class="font-mono text-[11px] tracking-[.12em] text-mute hidden sm:block">9:16 · UI Motion · Synthetic Audio</span>
+      </div>
+
+      <div class="mt-10 md:mt-16 grid md:grid-cols-12 gap-10 lg:gap-16 items-center">
+        <div class="md:col-span-5 lg:col-span-4 reveal">
+          <div class="vframe max-w-[360px]" data-cursor="Sound" data-cam="Cam C · 9:16" data-file="assets/03-whatsapp-launch.mp4">
+            <div class="tilt-in aspect-[9/16] w-full" style="aspect-ratio: 9/16;">
+              <video class="absolute inset-0 w-full h-full object-cover" src="assets/03-whatsapp-launch.mp4" autoplay muted loop playsinline preload="metadata" aria-label="WhatsApp feature launch UI motion video"></video>
+            </div>
+          </div>
+        </div>
+        <div class="md:col-span-7 lg:col-span-8">
+          <h2 class="reveal text-[clamp(2.1rem,4.6vw,4.25rem)] font-semibold leading-[1.04] tracking-[-0.04em] bal">WhatsApp Feature Launch <span class="text-mute font-normal">— UI Motion &amp; AI Audio</span></h2>
+          <p class="reveal mt-6 md:mt-8 text-[clamp(1.05rem,1.5vw,1.3rem)] leading-[1.55] text-alabaster/90 max-w-[46ch]" style="--d:.08s">
+            Code-driven Remotion UI animation each & every tap, transition and state change is deterministic and frame-exact paired with synthetic audio generated in Suno.ai.
+          </p>
+          <dl class="reveal mt-8 font-mono text-[12px] leading-relaxed border-y border-white/[.08] divide-y divide-white/[.08]" style="--d:.14s">
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Motion</dt><dd><span class="tool">Remotion</span> · 9:16</dd></div>
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Audio</dt><dd><span class="tool">Suno.ai</span> · synthetic</dd></div>
+            <div class="grid grid-cols-[104px_1fr] gap-3 py-3.5"><dt class="text-mute">Turnaround</dt><dd>60 Mins</dd></div>
+          </dl>
+          <a href="https://drive.google.com/file/d/1oQIk9rxpwkEynU0AXIp-44lhxFECm9PZ/view?usp=drive_link" target="_blank" rel="noopener" class="reveal inline-block mt-6 font-mono text-[11px] uppercase tracking-widest text-mute hover:text-vermilion transition-colors" style="--d:.2s">↗ View High-Res (Drive)</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 04 — Character Consistency ===== -->
+    <section id="a4" data-sec class="pb-24 md:pb-40">
+      <div class="flex items-center gap-5 md:gap-8 reveal">
+        <span class="font-mono text-[12px] tracking-[.2em] text-vermilion">04</span>
+        <span class="hair flex-1 h-px bg-white/10"></span>
+        <span class="font-mono text-[11px] tracking-[.12em] text-mute hidden sm:block">9:16 · Multi-Shot Continuity</span>
+      </div>
+      <h2 class="reveal mt-8 md:mt-12 max-w-[22ch] text-[clamp(2.1rem,5.2vw,4.75rem)] font-semibold leading-[1.03] tracking-[-0.04em] bal" style="--d:.08s">Character Consistency <span class="text-mute font-normal">— Identity Continuity Study</span></h2>
+
+      <div class="mt-8 md:mt-10 grid md:grid-cols-12 gap-6 md:gap-8">
+        <p class="reveal md:col-span-7 lg:col-span-6 text-[clamp(1.05rem,1.5vw,1.3rem)] leading-[1.55] text-alabaster/90 max-w-[52ch]" style="--d:.12s">
+          A consistency presentation featuring multi-shot sequences from commercials and microdramas made by me, demonstrating how character identity, wardrobe, and lighting remain locked across 3 to 4 distinct camera angles per sequence.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-10 md:mt-14">
+        <div class="vframe reveal" data-cursor="Sound" data-cam="Seq 01 · 3–4 Shots" data-file="assets/04-consistency-01.mp4">
+          <div class="tilt-in aspect-[9/16] w-full" style="aspect-ratio: 9/16;">
+            <video class="absolute inset-0 w-full h-full object-cover" src="assets/04-consistency-01.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Character consistency sequence 1"></video>
+          </div>
+        </div>
+        <div class="vframe reveal" style="--d:.12s" data-cursor="Sound" data-cam="Seq 02 · 3–4 Shots" data-file="assets/04-consistency-02.mp4">
+          <div class="tilt-in aspect-[9/16] w-full" style="aspect-ratio: 9/16;">
+            <video class="absolute inset-0 w-full h-full object-cover" src="assets/04-consistency-02.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Character consistency sequence 2"></video>
+          </div>
+        </div>
+        <div class="vframe reveal" style="--d:.24s" data-cursor="Sound" data-cam="Seq 03 · 3–4 Shots" data-file="assets/04-consistency-03.mp4">
+          <div class="tilt-in aspect-[9/16] w-full" style="aspect-ratio: 9/16;">
+            <video class="absolute inset-0 w-full h-full object-cover" src="assets/04-consistency-03.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Character consistency sequence 3"></video>
+          </div>
+        </div>
+      </div>
+
+      <a href="https://drive.google.com/drive/folders/1H441ZogOkroJlxVFvgtVJaW5LXA-s3OY?usp=sharing" target="_blank" rel="noopener" class="reveal inline-block mt-10 md:mt-14 font-mono text-[12px] md:text-[13px] uppercase tracking-widest text-alabaster border-b border-white/20 pb-1.5 hover:text-vermilion hover:border-vermilion transition-colors">↗ View Full Consistency Folder (Drive)</a>
+    </section>
+
+    <!-- ===== 05 — Emergent Film Concept ===== -->
+    <section id="a5" data-sec class="pb-20 md:pb-28">
+      <div class="flex items-center gap-5 md:gap-8 reveal">
+        <span class="font-mono text-[12px] tracking-[.2em] text-vermilion">05</span>
+        <span class="hair flex-1 h-px bg-white/10"></span>
+        <span class="font-mono text-[11px] tracking-[.12em] text-mute hidden sm:block">60 sec · Narrative Pitch</span>
+      </div>
+      <h2 class="reveal mt-8 md:mt-12 max-w-[22ch] text-[clamp(2.1rem,5.2vw,4.75rem)] font-semibold leading-[1.03] tracking-[-0.04em] bal" style="--d:.08s">Emergent Film Concept <span class="text-mute font-normal">— Before the Coffee Cools</span></h2>
+      <div id="pitch" class="reveal mt-8 md:mt-12 max-w-[56ch]" style="--d:.14s">
+        <div class="mb-6">
+          <h3 class="font-mono text-[11px] uppercase tracking-widest text-mute mb-2">Logline</h3>
+          <p class="text-[clamp(1.15rem,1.8vw,1.5rem)] font-medium leading-[1.4] text-alabaster">Two founders sketch an idea on a napkin in a busy café, and before their coffee even cools, they use Emergent to speak it into a live, working application.</p>
+        </div>
+        <div class="mb-6">
+          <h3 class="font-mono text-[11px] uppercase tracking-widest text-mute mb-2">Visual Approach</h3>
+          <p class="text-[clamp(1.05rem,1.4vw,1.15rem)] leading-[1.55] text-alabaster/80">A fast-paced 60 second spot. Dynamic camera motion transitions seamlessly from a tactile, macro shot of the paper napkin to crisp, code-driven UI motion.</p>
+        </div>
+        <div>
+          <h3 class="font-mono text-[11px] uppercase tracking-widest text-mute mb-2">The Arc</h3>
+          <p class="text-[clamp(1.05rem,1.4vw,1.15rem)] leading-[1.55] text-alabaster/80">Instead of the classic trope of "finding a developer," one founder simply opens their laptop and describes the napkin sketch in plain English. Through snappy cuts, we watch the interface assemble itself in real-time. They test it right at the table and share the live link with the waiter. A relatable, grounded demonstration of turning ideas into software in minutes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Project note (R&D framing) ===== -->
+    <aside class="reveal pb-24 md:pb-36" aria-label="Project note">
+      <div class="max-w-[64ch] border-l border-vermilion/60 pl-5 md:pl-6">
+        <p class="font-mono text-[11.5px] md:text-[12px] leading-[1.75] tracking-[.02em] text-mute"><span class="text-alabaster/80">Project Note:</span> The assets presented above are independent technical explorations and R&amp;D studies. They were engineered to test the absolute limits of current generative AI tools, workflows, and rapid turnaround times, rather than as published client deliverables.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+(() => {
+  /* Footage paths live on each .vframe (data-file + video src). Drop your files into /assets. */
+  const FPS = 24;
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ss = t => { t = clamp(t); return t * t * (3 - 2 * t); };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FINE = matchMedia('(hover:hover) and (pointer:fine)').matches;
+  const root = document.documentElement;
+  const pad = n => String(n).padStart(2, '0');
+  const tcFmt = (sec, withFrames = true) => {
+    const f = Math.floor((sec % 1) * FPS);
+    const s = Math.floor(sec % 60), m = Math.floor(sec / 60) % 60, h = Math.floor(sec / 3600);
+    return withFrames ? `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}` : `${pad(m)}:${pad(s)}:${pad(f)}`;
+  };
+
+  /* ============ split hero name into letters ============ */
+  const nameEl = $('#name');
+  nameEl.setAttribute('aria-label', nameEl.dataset.text);
+  nameEl.textContent = '';
+  let li = 0;
+  nameEl.dataset.text.split(' ').forEach(w => {
+    const ws = document.createElement('span'); ws.className = 'word'; ws.setAttribute('aria-hidden', 'true');
+    [...w].forEach(c => {
+      const r = document.createElement('span'); r.className = 'ch'; r.style.setProperty('--i', li++);
+      const i = document.createElement('span'); i.className = 'ch-i'; i.textContent = c;
+      r.appendChild(i); ws.appendChild(r);
+    });
+    nameEl.appendChild(ws);
+  });
+  const letters = $$('.ch-i').map(el => ({ el, p: el.parentElement, k: 0, on: false }));
+
+  /* ============ refs ============ */
+  const intro = $('#intro'), stage = $('#stage');
+  const nameWrap = $('#nameWrap'), heroTitle = $('#heroTitle'), exp = $('#exp');
+  const prompt = $('#prompt'), hud = $('#hud'), tc = $('#tc'), progress = $('#progress');
+  let vh = innerHeight, introTop = 0, introH = intro.offsetHeight;
+  const measure = () => { vh = innerHeight; introTop = intro.offsetTop; introH = intro.offsetHeight; last = -1; };
+
+  /* ============ cursor ============ */
+  const dot = $('#dot'), ring = $('#ring'), ringT = $('.ring-t', ring);
+  let mx = -999, my = -999, rx = -999, ry = -999, moved = false, sx = innerWidth / 2, sy = innerHeight / 2;
+  if (FINE) {
+    root.classList.add('has-cursor');
+    addEventListener('pointermove', e => {
+      if (e.pointerType === 'touch') return;
+      if (!moved) { rx = mx = e.clientX; ry = my = e.clientY; } else { mx = e.clientX; my = e.clientY; }
+      moved = true;
+    }, { passive: true });
+    document.addEventListener('pointerover', e => {
+      const t = e.target; if (!t.closest) return;
+      const dc = t.closest('[data-cursor]'), lk = t.closest('a,button');
+      ring.classList.toggle('big', !!dc);
+      ring.classList.toggle('link', !!lk && !dc);
+      ringT.textContent = dc ? dc.dataset.cursor : '';
+    });
+    root.addEventListener('mouseleave', () => { dot.style.opacity = 0; ring.style.opacity = 0; });
+    root.addEventListener('mouseenter', () => { dot.style.opacity = ''; ring.style.opacity = ''; });
+  }
+
+  /* ============ videos ============ */
+  const frames = $$('.vframe');
+  const vis = new Set();
+
+  const setSound = (fr, on) => {
+    const v = $('video', fr);
+    v.muted = !on;
+    fr.classList.toggle('sound', on);
+    $('.snd', fr).setAttribute('aria-pressed', on);
+    $('.snd-t', fr).textContent = on ? 'Sound on' : 'Sound off';
+    fr.dataset.cursor = on ? 'Mute' : 'Sound';
+    if (fr.matches(':hover')) ringT.textContent = fr.dataset.cursor;
+  };
+
+  const tilts = frames.map(fr => {
+    const box = $('.tilt-in', fr), v = $('video', fr);
+    box.insertAdjacentHTML('beforeend', `
+      <div class="ph"><span class="ph-l">Awaiting footage</span><span class="ph-f">${fr.dataset.file}</span></div>
+      <div class="vf" aria-hidden="true">
+        <span class="rec"><b></b>REC</span><span class="vtc">00:00:00</span><span class="cam">${fr.dataset.cam}</span></div>
+      <button class="snd" type="button" aria-pressed="false" aria-label="Toggle sound"><span class="eq"><i></i><i></i><i></i></span><span class="snd-t">Sound off</span></button>`);
+    const vtc = $('.vtc', fr);
+    v.addEventListener('loadeddata', () => fr.classList.add('ready'));
+    if (v.readyState >= 2) fr.classList.add('ready');
+    v.addEventListener('playing', () => fr.classList.add('live'));
+    v.addEventListener('pause', () => fr.classList.remove('live'));
+    fr.addEventListener('click', () => {
+      if (!fr.classList.contains('ready')) return;
+      const on = v.muted;
+      frames.forEach(f => f !== fr && setSound(f, false));
+      setSound(fr, on);
+      if (on && v.paused) v.play().catch(() => {});
+    });
+    const t = { fr, box, v, vtc, rx: 0, ry: 0, tx: 0, ty: 0 };
+    if (FINE && !RM) {
+      fr.addEventListener('mousemove', e => {
+        const r = fr.getBoundingClientRect();
+        t.ty = ((e.clientX - r.left) / r.width - .5) * 4;
+        t.tx = -((e.clientY - r.top) / r.height - .5) * 3;
+      });
+      fr.addEventListener('mouseleave', () => { t.tx = t.ty = 0; });
+    }
+    return t;
+  });
+
+  const vio = new IntersectionObserver(es => es.forEach(e => {
+    const v = e.target, fr = v.closest('.vframe');
+    if (e.isIntersecting) { vis.add(fr); v.play().catch(() => {}); }
+    else { vis.delete(fr); v.pause(); if (!v.muted) setSound(fr, false); }
+  }), { threshold: .2 });
+  tilts.forEach(t => vio.observe(t.v));
+
+  /* ============ reveal + rail ============ */
+  const rio = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); rio.unobserve(e.target); }
+  }), { threshold: .12, rootMargin: '0px 0px -8% 0px' });
+  $$('.reveal,.clipr,.hair').forEach(el => rio.observe(el));
+
+  const railLinks = $$('#rail a');
+  const sio = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) railLinks.forEach(a => a.classList.toggle('on', a.dataset.rail === e.target.id));
+  }), { rootMargin: '-45% 0px -45% 0px' });
+  $$('[data-sec]').forEach(s => sio.observe(s));
+
+  $('#home').addEventListener('click', e => { e.preventDefault(); scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' }); });
+
+  /* ============ intro choreography ============ */
+  let p = 0, ps = 0, last = -1, fading = false;
+  function renderIntro(v) {
+    // Stage 2: title fades/slides in (0.15 → 0.45)
+    const tp = ss((v - .15) / .30);
+    // Stage 3: name + title fade out, slight upward drift (0.45 → ~0.58)
+    const fo = ss((v - .45) / .13);
+    nameWrap.style.opacity = (1 - fo).toFixed(3);
+    nameWrap.style.transform = `translate3d(0,${(-fo * 48).toFixed(1)}px,0)`;
+    heroTitle.style.opacity = tp.toFixed(3);
+    heroTitle.style.transform = `translate3d(0,${((1 - tp) * 28).toFixed(1)}px,0)`;
+
+    // Stage 3: experience statement fades fully in (0.50 → 0.65) and holds at 100%;
+    // Stage 4: fades out (0.85 → 1.00)
+    const ei = ss((v - .50) / .15), eo = ss((v - .85) / .15);
+    exp.style.opacity = (ei * (1 - eo)).toFixed(3);
+    exp.style.transform = `translate3d(0,${((1 - ei) * 36 - eo * 26).toFixed(1)}px,0)`;
+    exp.style.filter = (ei < 1 && !RM) ? `blur(${((1 - ei) * 8).toFixed(1)}px)` : 'none';
+
+    // Stage 4: scroll prompt + HUD fade out
+    const out = 1 - eo;
+    if (eo > 0) {
+      for (const el of [prompt, hud]) { el.style.transition = 'none'; el.style.opacity = out.toFixed(3); }
+      fading = true;
+    } else if (fading) {
+      for (const el of [prompt, hud]) { el.style.transition = ''; el.style.opacity = ''; }
+      fading = false;
+    }
+
+    progress.style.transform = `scaleX(${v.toFixed(4)})`;
+    tc.textContent = tcFmt(v * 36);
+  }
+
+  /* ============ main loop ============ */
+  function frame() {
+    p = clamp((scrollY - introTop) / Math.max(1, introH - vh));
+    ps = RM ? p : lerp(ps, p, .14);
+    if (Math.abs(ps - p) < .0005) ps = p;
+    if (Math.abs(ps - last) > 1e-5) { renderIntro(ps); last = ps; }
+    root.classList.toggle('past', p > .96);
+
+    if (FINE) {
+      // cursor
+      dot.style.transform = `translate3d(${mx}px,${my}px,0)`;
+      rx = lerp(rx, mx, .18); ry = lerp(ry, my, .18);
+      ring.style.transform = `translate3d(${rx}px,${ry}px,0)`;
+      // spotlight
+      if (moved) { sx = lerp(sx, mx, .08); sy = lerp(sy, my, .08); stage.style.setProperty('--sx', sx.toFixed(0) + 'px'); stage.style.setProperty('--sy', sy.toFixed(0) + 'px'); }
+      // letter proximity
+      if (!RM && ps < .5) {
+        for (const L of letters) {
+          let target = 0;
+          if (moved) {
+            const r = L.p.getBoundingClientRect();
+            const d = Math.hypot(mx - (r.left + r.width / 2), (my - (r.top + r.height / 2)) * .9);
+            target = clamp(1 - d / 170);
+          }
+          L.k = lerp(L.k, target, .14);
+          if (L.k > .003) {
+            const kk = Math.pow(L.k, 2.2);
+            L.el.style.transform = `translate3d(0,${(-L.k * L.k * 16).toFixed(2)}px,0)`;
+            L.el.style.color = `rgb(${Math.round(lerp(244, 255, kk))},${Math.round(lerp(243, 79, kk))},${Math.round(lerp(239, 31, kk))})`;
+            L.on = true;
+          } else if (L.on) { L.el.style.transform = ''; L.el.style.color = ''; L.on = false; }
+        }
+      }
+      // video tilt
+      for (const t of tilts) {
+        t.rx = lerp(t.rx, t.tx, .08); t.ry = lerp(t.ry, t.ty, .08);
+        if (Math.abs(t.rx) > .002 || Math.abs(t.ry) > .002) {
+          t.box.style.transform = `rotateX(${t.rx.toFixed(3)}deg) rotateY(${t.ry.toFixed(3)}deg)`; t.tilted = true;
+        } else if (t.tilted) { t.box.style.transform = ''; t.tilted = false; }
+      }
+    }
+
+    // live timecode on visible videos
+    for (const t of tilts) {
+      if (!vis.has(t.fr)) continue;
+      t.vtc.textContent = tcFmt(t.v.currentTime || 0, true).slice(3);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  addEventListener('resize', measure);
+  addEventListener('load', measure);
+  measure();
+  const go = () => root.classList.add('loaded');
+  (document.fonts && document.fonts.ready ? document.fonts.ready.then(go) : Promise.resolve().then(go));
+  setTimeout(go, 1200);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
